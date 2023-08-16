@@ -13,30 +13,33 @@ fn nextLine(reader: anytype, buffer: []u8) !?[]const u8 {
     }
 }
 
-fn askUser() !void {
+fn askUser(buffer: []u8) !?[]const u8 {
     const stdout = std.io.getStdOut();
     const stdin = std.io.getStdIn();
     try stdout.writeAll(
         \\ Enter your name:
     );
 
-    var buffer: [100]u8 = undefined;
-    const input = (try nextLine(stdin.reader(), &buffer)).?;
-    var isZero = std.mem.eql(u8, input, "zero");
-    if (isZero) {
-        try stdout.writer().print(
-            "Your name is: \"{s}\"\n",
-            .{input},
-        );
-    } else {
-        try stdout.writer().print("You arent zero your name is: {s}\n", .{input});
-    }
+    const input = (try nextLine(stdin.reader(), buffer)).?;
+    return input;
 }
 
-test "read until next line" {
-    const target = 9;
+pub fn main() !void {
+    const target = "wai";
     _ = target;
 
-    //TODO: return here the input value
-    try askUser();
+    const stdout = std.io.getStdOut();
+
+    var buffer: [100]u8 = undefined;
+    const userInput = askUser(&buffer) catch |err| {
+        std.debug.print("Error: {}\n", .{err});
+        return;
+    };
+
+    if (userInput) |value| {
+        try stdout.writer().print(
+            "Your name is: \"{s}\"\n",
+            .{value},
+        );
+    }
 }
